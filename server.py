@@ -27,7 +27,7 @@ def check(method, url, body) :
             
                 else :
                     return fillHeaderResp(header[3]) 
-                    # ex) request = HEAD 127.0.0.1/index.html => response = 400, bad request
+                    # ex) request = GET 127.0.0.1/index.css => response = 400, bad request
             
             elif (path == 'update') :
                 if (method == 'PUT') :
