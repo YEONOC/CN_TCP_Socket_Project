@@ -21,9 +21,12 @@ def check(method, url, body) :
                 # ex) request = HEAD 127.0.0.1/ => response = 100, continue
             
             if (method == 'GET') :
-                if (path == 'index.html') :
-                    return fillHeaderResp(header[1], body) 
-                    # ex) request = GET 127.0.0.1/index.html => response = 200, ok
+                if (path == 'db.json') :
+                    with open('./db.json', 'r') as f:
+                        json_data = json.load(f)
+                    database=json.dumps(json_data, indent="\t")
+                    return fillHeaderResp(header[1], body = database) 
+                    # ex) request = GET 127.0.0.1/db.json => response = 200, ok
             
                 else :
                     return fillHeaderResp(header[3]) 
@@ -36,7 +39,7 @@ def check(method, url, body) :
             
                 else :
                     return fillHeaderResp(header[3]) 
-                    # ex) request = HEAD 127.0.0.1/update => response = 400, bad request
+                    # ex) request = GET 127.0.0.1/update => response = 400, bad request
             
             elif (path == 'create') :
                 if (method == 'POST') :
@@ -45,7 +48,7 @@ def check(method, url, body) :
             
                 else :
                     return fillHeaderResp(header[3]) 
-                    # ex) request = HEAD 127.0.0.1/create => response = 400, bad request
+                    # ex) request = GET 127.0.0.1/create => response = 400, bad request
             
             else :
                 return fillHeaderResp(header[4]) 
@@ -72,7 +75,7 @@ def respPut(body) :
         with open('./db.json', 'r') as f: # db.json 파일 내용 불러오기
             json_data = json.load(f)
         database = json.dumps(json_data, indent="\t")
-        return fillHeaderResp(header[2], body=str(database))
+        return fillHeaderResp(header[1], body=database)
     else :
         return fillHeaderResp(header[3])
         
@@ -90,7 +93,7 @@ def respPost(body) :
         with open('./db.json', 'r') as f: # db.json 파일 내용 불러오기
             json_data = json.load(f)
         database = json.dumps(json_data, indent="\t")
-        return fillHeaderResp(header[2], body=str(database))
+        return fillHeaderResp(header[2], body=database)
     else :
         return fillHeaderResp(header[3])
 
@@ -105,26 +108,24 @@ def findMethod(arr) :
     return arr[0]
 
 #서버 소켓 설정
-serverSocket = socket(AF_INET, SOCK_STREAM) # AF_INET : IPv4 인터넷 프로토콜, SOCK_STREAM : 소켓 타입을 TCP 프로토콜로 통신
-serverSocket.bind((IP,PORT)) # 주소 바인딩
-serverSocket.listen(1) # 클라이언트의 요청을 받을 준비
-print("server connected, localhost:8080")
+with socket(AF_INET, SOCK_STREAM) as serverSocket : # AF_INET : IPv4 인터넷 프로토콜, SOCK_STREAM : 소켓 타입을 TCP 프로토콜로 통신
+    serverSocket.bind((IP,PORT)) # 주소 바인딩
+    serverSocket.listen(1) # 클라이언트의 요청을 받을 준비
+    print("server connected, localhost:8080")
 
-# 무한루프 진입
-while True :
-    connectionSocket, addr = serverSocket.accept() # 수신대기, 접속한 클라이언트 정보 (소켓, 주소) 변환
+    # 무한루프 진입
+    while True :
+        connectionSocket, addr = serverSocket.accept() # 수신대기, 접속한 클라이언트 정보 (소켓, 주소) 변환
 
-    msg = connectionSocket.recv(1024).decode('utf-8') # 클라이언트가 보낸 메세지 변환
+        msg = connectionSocket.recv(1024).decode('utf-8') # 클라이언트가 보낸 메세지 변환
     
-    # 클라이언트의 request 확인
-    msgarr = msg.split('\n')
-    method = findMethod(msgarr[0])
-    url = msgarr[1][6:-1]
-    body = msgarr[-1]
-    resp = check(method, url, body)
+        # 클라이언트의 request 확인
+        msgarr = msg.split('\n')
+        method = findMethod(msgarr[0])
+        url = msgarr[1][6:-1]
+        body = msgarr[-1]
+        resp = check(method, url, body)
     
-    print("[{}] message : \n{}".format(addr, msg)) # 클라이언트가 보낸 메세지 출력
+        print("[{}] message : \n{}".format(addr, msg)) # 클라이언트가 보낸 메세지 출력
 
-    connectionSocket.send(resp.encode('utf-8')) # 클라이언트에게 응답
-
-    connectionSocket.close() # 클라이언트 소켓 종료
+        connectionSocket.send(resp.encode('utf-8')) # 클라이언트에게 응답
