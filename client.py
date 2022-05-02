@@ -7,7 +7,7 @@ serverIP = '127.0.0.1' # 서버 IP를 127.0.0.1로 설정
 serverPort = 8080 # 포트넘버 8080으로 설정
 
 
-while command != 'quit' :
+while True :
     command = input().split(' ')
     # 클라이언트 소켓 설정
     clientSocket = socket(AF_INET, SOCK_STREAM) # AF_INET : IPv4 인터넷 프로토콜, SOCK_STREAM : 소켓 타입을 TCP 프로토콜로 통신
@@ -29,3 +29,5 @@ while command != 'quit' :
     msg = clientSocket.recv(1024).decode("utf-8") # 서버로 부터 온 메세지
 
     print("응답 요청 결과 : \n{}".format(msg))
+
+    clientSocket.close()
