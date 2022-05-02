@@ -20,8 +20,8 @@ def check(method, url, body) :
                 return fillHeaderResp(header[0])  
                 # ex) request = HEAD 127.0.0.1/ => response = 100, continue
             
-            if (path == 'index.html') :
-                if (method == 'GET') :
+            if (method == 'GET') :
+                if (path == 'index.html') :
                     return fillHeaderResp(header[1], body) 
                     # ex) request = GET 127.0.0.1/index.html => response = 200, ok
             
